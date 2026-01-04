@@ -180,7 +180,7 @@ def fill_in_lipid_holes(molecules_by_triangle: list, params: dict):
 
             # now that the plane has been identified, find the average distance between the plane and lipid headgroups
             # also, start adding lipids that could clash with future inserted lipids into the neighborhood_lipids_that_could_clash list. All lipids in the margin and submargin of the central triangle will be added.
-            lipid_head_indices = numpy.empty(len(lipids), dtype=numpy.int)
+            lipid_head_indices = numpy.empty(len(lipids), dtype=int)
             for indx, lipid in enumerate(lipids):
                 lipid_head_indices[indx] = lipid.get_headgroup_index(
                     params["lipid_headgroup_marker"]

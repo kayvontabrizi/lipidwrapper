@@ -125,7 +125,7 @@ def load_mesh_points_and_triangulations(params: dict):
             sys.exit(0)
 
         pic = Image.open(params["surface_filename"])
-        pic = pic.resize((int(width), int(height)), Image.NEAREST)
+        pic = pic.resize((int(width), int(height)), Image.Resampling.NEAREST)
         pic = numpy.array(pic)
 
         pts_list = []
@@ -163,7 +163,7 @@ def load_mesh_points_and_triangulations(params: dict):
 
         # project the points back onto the mesh surface (3d trinagles)
         all_triangles = []
-        for ia, ib, ic in tri1.vertices:
+        for ia, ib, ic in tri1.simplices:
             all_triangles.append(
                 [
                     pts.all_atoms_numpy[ia],
@@ -476,31 +476,25 @@ def position_lipid_model_on_triangulated_tiles(
             # first, identify all residues
             atom_counts = len(lipid.atom_inf_resids)
 
-            all_ids = numpy.core.defchararray.add(
+            all_ids = numpy.char.add(
                 lipid.atom_inf_string_vals[:, 0], numpy.array(["_"] * atom_counts)
             )
-            all_ids = numpy.core.defchararray.add(all_ids, lipid.atom_inf_resids)
-            all_ids = numpy.core.defchararray.add(
-                all_ids, numpy.array(["_"] * atom_counts)
-            )
-            all_ids = numpy.core.defchararray.add(
-                all_ids, lipid.atom_inf_string_vals[:, 1]
-            )
+            all_ids = numpy.char.add(all_ids, lipid.atom_inf_resids)
+            all_ids = numpy.char.add(all_ids, numpy.array(["_"] * atom_counts))
+            all_ids = numpy.char.add(all_ids, lipid.atom_inf_string_vals[:, 1])
 
             # now identify all residues to keep
             atom_counts = len(headgroup_indices_to_keep)
             if atom_counts != 0:
-                hg_ids = numpy.core.defchararray.add(
+                hg_ids = numpy.char.add(
                     lipid.atom_inf_string_vals[headgroup_indices_to_keep, 0],
                     numpy.array(["_"] * atom_counts),
                 )
-                hg_ids = numpy.core.defchararray.add(
+                hg_ids = numpy.char.add(
                     hg_ids, lipid.atom_inf_resids[headgroup_indices_to_keep]
                 )
-                hg_ids = numpy.core.defchararray.add(
-                    hg_ids, numpy.array(["_"] * atom_counts)
-                )
-                hg_ids = numpy.core.defchararray.add(
+                hg_ids = numpy.char.add(hg_ids, numpy.array(["_"] * atom_counts))
+                hg_ids = numpy.char.add(
                     hg_ids, lipid.atom_inf_string_vals[headgroup_indices_to_keep, 1]
                 )
             else:
@@ -509,20 +503,20 @@ def position_lipid_model_on_triangulated_tiles(
             # now identify all residues to never delete (inside inner triangle)
             atom_counts = len(headgroup_indices_not_in_triangle_margin)
             if atom_counts != 0:
-                hg_ids_not_in_triangle_margin = numpy.core.defchararray.add(
+                hg_ids_not_in_triangle_margin = numpy.char.add(
                     lipid.atom_inf_string_vals[
                         headgroup_indices_not_in_triangle_margin, 0
                     ],
                     numpy.array(["_"] * atom_counts),
                 )
-                hg_ids_not_in_triangle_margin = numpy.core.defchararray.add(
+                hg_ids_not_in_triangle_margin = numpy.char.add(
                     hg_ids_not_in_triangle_margin,
                     lipid.atom_inf_resids[headgroup_indices_not_in_triangle_margin],
                 )
-                hg_ids_not_in_triangle_margin = numpy.core.defchararray.add(
+                hg_ids_not_in_triangle_margin = numpy.char.add(
                     hg_ids_not_in_triangle_margin, numpy.array(["_"] * atom_counts)
                 )
-                hg_ids_not_in_triangle_margin = numpy.core.defchararray.add(
+                hg_ids_not_in_triangle_margin = numpy.char.add(
                     hg_ids_not_in_triangle_margin,
                     lipid.atom_inf_string_vals[
                         headgroup_indices_not_in_triangle_margin, 1
@@ -534,42 +528,34 @@ def position_lipid_model_on_triangulated_tiles(
             # now identify all residues that are even interior to the submargin
             atom_counts = len(headgroup_indices_not_in_triangle_margin_or_submargin)
             if atom_counts != 0:
-                hg_ids_not_in_triangle_margin_or_submargin = (
-                    numpy.core.defchararray.add(
-                        lipid.atom_inf_string_vals[
-                            headgroup_indices_not_in_triangle_margin_or_submargin, 0
-                        ],
-                        numpy.array(["_"] * atom_counts),
-                    )
+                hg_ids_not_in_triangle_margin_or_submargin = numpy.char.add(
+                    lipid.atom_inf_string_vals[
+                        headgroup_indices_not_in_triangle_margin_or_submargin, 0
+                    ],
+                    numpy.array(["_"] * atom_counts),
                 )
-                hg_ids_not_in_triangle_margin_or_submargin = (
-                    numpy.core.defchararray.add(
-                        hg_ids_not_in_triangle_margin_or_submargin,
-                        lipid.atom_inf_resids[
-                            headgroup_indices_not_in_triangle_margin_or_submargin
-                        ],
-                    )
+                hg_ids_not_in_triangle_margin_or_submargin = numpy.char.add(
+                    hg_ids_not_in_triangle_margin_or_submargin,
+                    lipid.atom_inf_resids[
+                        headgroup_indices_not_in_triangle_margin_or_submargin
+                    ],
                 )
-                hg_ids_not_in_triangle_margin_or_submargin = (
-                    numpy.core.defchararray.add(
-                        hg_ids_not_in_triangle_margin_or_submargin,
-                        numpy.array(["_"] * atom_counts),
-                    )
+                hg_ids_not_in_triangle_margin_or_submargin = numpy.char.add(
+                    hg_ids_not_in_triangle_margin_or_submargin,
+                    numpy.array(["_"] * atom_counts),
                 )
-                hg_ids_not_in_triangle_margin_or_submargin = (
-                    numpy.core.defchararray.add(
-                        hg_ids_not_in_triangle_margin_or_submargin,
-                        lipid.atom_inf_string_vals[
-                            headgroup_indices_not_in_triangle_margin_or_submargin, 1
-                        ],
-                    )
+                hg_ids_not_in_triangle_margin_or_submargin = numpy.char.add(
+                    hg_ids_not_in_triangle_margin_or_submargin,
+                    lipid.atom_inf_string_vals[
+                        headgroup_indices_not_in_triangle_margin_or_submargin, 1
+                    ],
                 )
             else:
                 hg_ids_not_in_triangle_margin_or_submargin = numpy.array([])
 
             # remove the lipids that are beyond the bounds of this triangle to speed up subsequent searching
             # Find the indices of elements of all_ids that are in hg_ids.
-            iall_ids = numpy.in1d(all_ids.ravel(), hg_ids).reshape(all_ids.shape)
+            iall_ids = numpy.isin(all_ids.ravel(), hg_ids).reshape(all_ids.shape)
             indices_of_lipids_to_keep = numpy.where(iall_ids)[0]
             lipid = lipid.portion_of(indices_of_lipids_to_keep)
             all_ids = all_ids[indices_of_lipids_to_keep]

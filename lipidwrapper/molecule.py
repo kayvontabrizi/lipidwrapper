@@ -135,9 +135,9 @@ class Molecule:
 
         # set up the numpy arrays to store the data
         self.atom_inf_string_vals = numpy.empty(
-            (len(lines), 4), dtype="|S9"
+            (len(lines), 4), dtype="U9"
         )  # chain, resname, atomname, id_keys
-        self.atom_inf_resids = numpy.empty(len(lines), dtype="|S4")
+        self.atom_inf_resids = numpy.empty(len(lines), dtype="U4")
         self.all_atoms_numpy = numpy.empty((len(lines), 3))
 
         # read in the data from the lines
@@ -632,7 +632,7 @@ class Triangle:
 
             # now get the points on the lines that are closest to each other
             coeffs = numpy.vstack((vec2, -vec1)).T
-            best_sol_all = numpy.linalg.lstsq(coeffs, pt1 - pt2)
+            best_sol_all = numpy.linalg.lstsq(coeffs, pt1 - pt2, rcond=None)
             best_sol = best_sol_all[0]
 
             if (
