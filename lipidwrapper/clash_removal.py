@@ -195,7 +195,7 @@ def remove_steric_clashes(molecules_by_triangle: list, params: dict):
     # now combine all the clash maps into one
     clash_map = {}
     for amap in tmp.results:
-        for akey in amap.keys():
+        for akey in list(amap.keys()):
             try:
                 clash_map[akey].extend(amap[akey])
             except:
@@ -214,7 +214,7 @@ def remove_steric_clashes(molecules_by_triangle: list, params: dict):
         # identify the molecule that makes the most clashes
         most_clashes = 0
         most_clashes_mol_index = -1
-        for mol_index in clash_map.keys():
+        for mol_index in list(clash_map.keys()):
             num_clashes = len(clash_map[mol_index])
             if num_clashes > most_clashes:
                 most_clashes = num_clashes
@@ -282,7 +282,7 @@ def remove_steric_clashes(molecules_by_triangle: list, params: dict):
     some_input = []
     gc.disable()
     t = 0
-    for triangle_index in lipids_to_delete.keys():
+    for triangle_index in list(lipids_to_delete.keys()):
         t = t + 1
         lipid_indices_to_delete = lipids_to_delete[triangle_index]
         some_input.append(

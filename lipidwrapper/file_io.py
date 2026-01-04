@@ -5,7 +5,7 @@ import os
 import random
 import string
 import gzip
-import cPickle as pickle
+import pickle as pickle
 
 
 ## methods

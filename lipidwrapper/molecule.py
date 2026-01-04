@@ -349,7 +349,7 @@ class Molecule:
             # get all the indices of the ones that have the same resname
             if chain == "" or chain is None or chain == -9999:
                 indices_of_ones_with_this_chain = numpy.array(
-                    range(len(self.atom_inf_string_vals))
+                    list(range(len(self.atom_inf_string_vals)))
                 )  # so it can be anything
             else:
                 indices_of_ones_with_this_chain = numpy.nonzero(
@@ -358,7 +358,7 @@ class Molecule:
 
             if resname == "" or resname is None or resname == -9999:
                 indices_of_ones_with_this_resname = numpy.array(
-                    range(len(self.atom_inf_string_vals))
+                    list(range(len(self.atom_inf_string_vals)))
                 )  # so it can be anything
             else:
                 indices_of_ones_with_this_resname = numpy.nonzero(
@@ -367,7 +367,7 @@ class Molecule:
 
             if resid == "" or resid is None or resid == -9999 or resid == "-9999":
                 indices_of_ones_with_this_resid = numpy.array(
-                    range(len(self.atom_inf_resids))
+                    list(range(len(self.atom_inf_resids)))
                 )  # so it can be anything
             else:
                 indices_of_ones_with_this_resid = numpy.nonzero(
@@ -376,7 +376,7 @@ class Molecule:
 
             if atomname == "" or atomname is None or atomname == -9999:
                 indices_of_ones_with_this_atomname = numpy.array(
-                    range(len(self.atom_inf_string_vals))
+                    list(range(len(self.atom_inf_string_vals)))
                 )  # so it can be anything
             else:
                 indices_of_ones_with_this_atomname = numpy.nonzero(

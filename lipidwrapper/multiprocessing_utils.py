@@ -34,10 +34,10 @@ class multi_threading:
         self.results = []
         indices_to_star = []
         if len(inputs) < 50:
-            indices_to_star = range(len(inputs))
+            indices_to_star = list(range(len(inputs)))
         else:
             while len(indices_to_star) < 50:
-                indx_to_add = random.choice(range(len(inputs)))
+                indx_to_add = random.choice(list(range(len(inputs))))
                 if not indx_to_add in indices_to_star:
                     indices_to_star.append(indx_to_add)
 
@@ -119,7 +119,7 @@ class multi_threading:
                 self.results.extend(chunk)
 
         if progress_bar_prefix != "":
-            print  # because the progress bar is now done
+            print()  # because the progress bar is now done
 
 
 class general_task:

@@ -370,7 +370,7 @@ def fill_in_lipid_holes(molecules_by_triangle: list, params: dict):
             gc.disable()  # because appending complex objects to a list
 
             for t in range(params["fill_hole_exhaustiveness"]):
-                indxs = range(len(local_pts_to_examine))
+                indxs = list(range(len(local_pts_to_examine)))
                 random.shuffle(indxs)  # so not examining points sequentially
                 for headgroup_loc_index in indxs:
                     if headgroup_loc_index < len(

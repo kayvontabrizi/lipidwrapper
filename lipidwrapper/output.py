@@ -79,7 +79,7 @@ def print_out_mesh_points(all_triangles: list, params: dict):
             point_already_shown.append(key)
             toprint.append(create_pdb_line(tile_triangle[2], "X"))
     if params["output_directory"] == "":
-        print "\n".join(toprint)
+        print("\n".join(toprint))
     else:
         f = open(params["output_directory"] + "grid_points.pdb", "w")
         f.write("\n".join(toprint))

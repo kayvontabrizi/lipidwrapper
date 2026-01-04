@@ -62,15 +62,15 @@ def run_program(argv: list):
 
     current_step = 0  # used for output filenames
 
-    print "\nREMARK      LipidWrapper " + version + "\n"
+    print("\nREMARK      LipidWrapper " + version + "\n")
 
     # check for Tkinter
     try:
-        import Tkinter
+        import tkinter
 
-        print "REMARK      The Tkinter python module is available. You may prefer to"
-        print "REMARK      use the LipidWrapper graphical user interface"
-        print "REMARK      (lipidwrapperGUI.py).\n"
+        print("REMARK      The Tkinter python module is available. You may prefer to")
+        print("REMARK      use the LipidWrapper graphical user interface")
+        print("REMARK      (lipidwrapperGUI.py).\n")
         del Tkinter
     except:
         pass  # GUI not available
@@ -84,21 +84,23 @@ def run_program(argv: list):
         os.mkdir(params["memory_store_dir"])
 
     # load mesh points and generate triangulation
-    print "REMARK      Loading/creating and triangulating the mesh..."
+    print("REMARK      Loading/creating and triangulating the mesh...")
     all_triangles = lipid_positioning.load_mesh_points_and_triangulations(
         params
     )  # get the triangulations
 
     # load in the user-specified planar bilayer model
-    print "REMARK      Loading the original lipid-bilayer model (" + params[
-        "lipid_pdb_filename"
-    ] + ")..."
+    print(
+        "REMARK      Loading the original lipid-bilayer model ("
+        + params["lipid_pdb_filename"]
+        + ")..."
+    )
     lipid, min_headgroups, max_headgroups = lipid_positioning.load_lipid_model(
         params
     )  # get the lipid molecule object, properly centered on x-y plane, as well as bounding-box coordinates
 
     # fill the tessellated triangles with bilayer sections
-    print "REMARK      Position copies of the lipid bilayer on the trianguled mesh..."
+    print("REMARK      Position copies of the lipid bilayer on the trianguled mesh...")
     molecules_by_triangle = (
         lipid_positioning.position_lipid_model_on_triangulated_tiles(
             params, lipid, all_triangles, min_headgroups, max_headgroups
@@ -107,7 +109,7 @@ def run_program(argv: list):
 
     # save the bilayer sections if user requested
     if params["output_directory"] != "":
-        print "REMARK      Saving positioned lipid bilayers..."
+        print("REMARK      Saving positioned lipid bilayers...")
         current_step = current_step + 1
 
         dir_pathname = (
@@ -120,7 +122,9 @@ def run_program(argv: list):
         if not os.path.exists(dir_pathname):
             os.mkdir(dir_pathname)
 
-        class save_positioned_lipids_multiprocessing(multiprocessing_utils.general_task):
+        class save_positioned_lipids_multiprocessing(
+            multiprocessing_utils.general_task
+        ):
             """A class for saving the lipid molecules associated with each triangle"""
 
             def value_func(self, item, results_queue):
@@ -177,7 +181,7 @@ def run_program(argv: list):
 
     # delete clashing lipids if user requested
     if params["delete_clashing_lipids"] == "TRUE":
-        print "REMARK      Deleting lipids that sterically clash..."
+        print("REMARK      Deleting lipids that sterically clash...")
         clash_removal.remove_steric_clashes(
             molecules_by_triangle, params
         )  # remove steric clashes between lipids of adjacent tiles
@@ -196,7 +200,9 @@ def run_program(argv: list):
                 os.mkdir(dir_pathname)
 
             # print out remaining lipids
-            print "REMARK            Saving the lipids that were not deleted for reference..."
+            print(
+                "REMARK            Saving the lipids that were not deleted for reference..."
+            )
 
             class save_nondeleted_lipids_multiprocessing(
                 multiprocessing_utils.general_task
@@ -263,18 +269,22 @@ def run_program(argv: list):
         if params["fill_holes"] == "TRUE":
 
             # fill the holes
-            print "REMARK      Filling holes in the bilayer with additional lipid molecules..."
+            print(
+                "REMARK      Filling holes in the bilayer with additional lipid molecules..."
+            )
             positioned_lipids_by_triangle = hole_filling.fill_in_lipid_holes(
                 molecules_by_triangle, params
             )
 
             # remove filling lipids that clash
-            print "REMARK            Removing added lipids that clash..."
+            print("REMARK            Removing added lipids that clash...")
             clash_removal.remove_steric_clashes(positioned_lipids_by_triangle, params)
 
             # save work from this step if user requested
             if params["output_directory"] != "":
-                print "REMARK            Saving the lipids that were added for reference..."
+                print(
+                    "REMARK            Saving the lipids that were added for reference..."
+                )
                 current_step = current_step + 1
                 dir_pathname = (
                     params["output_directory"]
@@ -309,7 +319,9 @@ def run_program(argv: list):
                         self.print_star_if_appropriate(index)
 
                         if params["use_disk_instead_of_memory"] == "TRUE":
-                            triangle_lipids = file_io.load_pickle(triangle_lipids, params)
+                            triangle_lipids = file_io.load_pickle(
+                                triangle_lipids, params
+                            )
 
                         f = file_io.openfile(
                             dir_pathname
@@ -343,7 +355,9 @@ def run_program(argv: list):
                 )
 
             # now add the positioned ligands into the lipid list associated with the original triangle
-            print "REMARK            Adding the hole-filling lipids to the original models..."
+            print(
+                "REMARK            Adding the hole-filling lipids to the original models..."
+            )
             if params["use_disk_instead_of_memory"] == "TRUE":
 
                 class add_plugging_lipids_multiprocessing(
@@ -393,7 +407,9 @@ def run_program(argv: list):
             # save work from this step if user requested
             if params["output_directory"] != "":
                 # print out all lipids
-                print "REMARK            Saving the bilayers with holes plugged for reference..."
+                print(
+                    "REMARK            Saving the bilayers with holes plugged for reference..."
+                )
 
                 class save_plugged_lipids_multiprocessing(
                     multiprocessing_utils.general_task
@@ -460,7 +476,7 @@ def run_program(argv: list):
                 )
 
     # now print out all the final molecules
-    print "REMARK      Printing out or saving all lipids to a single file..."
+    print("REMARK      Printing out or saving all lipids to a single file...")
     if params["output_directory"] != "":
         current_step = current_step + 1
         dir_pathname = (
@@ -564,17 +580,17 @@ def run_program(argv: list):
                 if params["output_directory"] != "":
                     f.write(lipid.create_pdb_line(index, atomindex, resindex) + "\n")
                 else:
-                    print lipid.create_pdb_line(index, atomindex, resindex)
+                    print(lipid.create_pdb_line(index, atomindex, resindex))
 
     if params["output_directory"] != "":
         f.close()
 
     # optional output files
     if params["show_grid_points"] == "TRUE":
-        print "REMARK      Printing out or saving the grid points for reference..."
+        print("REMARK      Printing out or saving the grid points for reference...")
         output.print_out_mesh_points(all_triangles, params)
     if params["output_directory"] != "" or params["create_triangle_tcl_file"] == "TRUE":
-        print "REMARK      Creating a VMD TCL file showing the triangulations..."
+        print("REMARK      Creating a VMD TCL file showing the triangulations...")
         output.print_out_triangle_tcl_file(all_triangles, params)
 
     # if the disk was used instead of memory, delete the temporary directory
@@ -582,7 +598,7 @@ def run_program(argv: list):
         shutil.rmtree(params["memory_store_dir"])
 
     # tell the user how long it took for the program to execute
-    print "REMARK      Execution time: " + str(time.time() - starttime) + " seconds"
+    print("REMARK      Execution time: " + str(time.time() - starttime) + " seconds")
 
 
 if __name__ == "__main__":
