@@ -695,3 +695,5 @@ class Triangle:
             < params["triangle_center_proximity_cutoff_distance"]
         ):
             return True
+
+        return False
