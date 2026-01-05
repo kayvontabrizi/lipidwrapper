@@ -4,9 +4,9 @@
 import math
 
 # custom
-import pytest
 import numpy
 import numpy.testing
+import pytest
 
 # local
 from lipidwrapper import molecule

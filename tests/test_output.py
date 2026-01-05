@@ -4,12 +4,12 @@
 import os
 
 # custom
-import pytest
 import numpy
+import pytest
 
 # local
-from lipidwrapper import output
 from lipidwrapper import molecule
+from lipidwrapper import output
 
 
 class TestPrintOutMeshPoints:

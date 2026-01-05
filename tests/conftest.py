@@ -1,12 +1,12 @@
 ## imports
 
 # standard
-import tempfile
 import os
+import tempfile
 
 # custom
-import pytest
 import numpy
+import pytest
 
 # local
 from lipidwrapper import molecule

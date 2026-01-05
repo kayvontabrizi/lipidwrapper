@@ -1,14 +1,14 @@
 ## imports
 
 # standard
-import sys
-import math
 import gc
+import math
+import sys
 import warnings
 
 # custom
 import numpy
-from scipy.spatial import Delaunay
+import scipy.spatial
 
 # local
 from . import multiprocessing_utils
@@ -159,7 +159,7 @@ def load_mesh_points_and_triangulations(params: dict):
         flatten = flatten[:, 0:2]
 
         # now tesselate the 2D points
-        tri1 = Delaunay(flatten)
+        tri1 = scipy.spatial.Delaunay(flatten)
 
         # project the points back onto the mesh surface (3d trinagles)
         all_triangles = []

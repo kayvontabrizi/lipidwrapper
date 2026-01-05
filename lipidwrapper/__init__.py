@@ -30,22 +30,34 @@ either expressed or implied, of the FreeBSD Project.
 
 ## imports
 
+__all__ = [
+    "clash_removal",
+    "cli",
+    "file_io",
+    "hole_filling",
+    "lipid_positioning",
+    "molecule",
+    "multiprocessing_utils",
+    "numpy_extensions",
+    "output",
+]
+
 # standard
-import sys
-import time
 import gc
 import os
 import shutil
+import sys
+import time
 
 # local
-from . import multiprocessing_utils
-from . import numpy_extensions
-from . import molecule
+from . import clash_removal
 from . import cli
 from . import file_io
-from . import lipid_positioning
-from . import clash_removal
 from . import hole_filling
+from . import lipid_positioning
+from . import molecule
+from . import multiprocessing_utils
+from . import numpy_extensions
 from . import output
 
 

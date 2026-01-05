@@ -1,11 +1,11 @@
 ## imports
 
 # standard
+import gzip
 import os
+import pickle
 import random
 import string
-import gzip
-import pickle as pickle
 
 
 ## methods

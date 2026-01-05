@@ -1,8 +1,8 @@
 ## imports
 
 # standard
-import tempfile
 import os
+import tempfile
 
 # custom
 import pytest

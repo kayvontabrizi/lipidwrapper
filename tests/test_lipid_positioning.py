@@ -1,9 +1,9 @@
 ## imports
 
 # custom
-import pytest
 import numpy
 import numpy.testing
+import pytest
 
 # local
 from lipidwrapper import lipid_positioning

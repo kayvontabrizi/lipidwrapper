@@ -5,7 +5,7 @@ import gc
 
 # custom
 import numpy
-from scipy.spatial.distance import cdist
+import scipy.spatial.distance
 
 # local
 from . import multiprocessing_utils
@@ -99,7 +99,7 @@ def remove_steric_clashes(molecules_by_triangle: list, params: dict):
                     ):  # so there are some lipids in the margin
 
                         # now, look at distances between all headgroups in margin to identify ones that are close enough to potentially clash
-                        dists = cdist(
+                        dists = scipy.spatial.distance.cdist(
                             triangle1_headgroups[indices_in_margin1],
                             triangle2_headgroups[indices_in_margin2],
                         )
@@ -448,7 +448,7 @@ def two_lipids_clash(
 
     # now do a pairwise distance comparison between the remaining atoms
     if num_sub_partitions == 1:
-        if True in (cdist(mol1_reduced, mol2_reduced) < cutoff):
+        if True in (scipy.spatial.distance.cdist(mol1_reduced, mol2_reduced) < cutoff):
             return True
     else:
         a1s = numpy.array_split(
@@ -459,7 +459,10 @@ def two_lipids_clash(
         for mol1_reduced in a1s:
             for mol2_reduced in a2s:
                 if len(mol1_reduced) > 0 and len(mol2_reduced) > 0:
-                    if True in (cdist(mol1_reduced, mol2_reduced) < cutoff):
+                    if True in (
+                        scipy.spatial.distance.cdist(mol1_reduced, mol2_reduced)
+                        < cutoff
+                    ):
                         return True
 
     return False
@@ -480,7 +483,9 @@ def indices_of_close_pts(points1, points2, cutoff: float, num_sub_partitions: in
     """
 
     if num_sub_partitions == 1:
-        dists = cdist(points1, points2) < cutoff  # which ones clash
+        dists = (
+            scipy.spatial.distance.cdist(points1, points2) < cutoff
+        )  # which ones clash
         return numpy.nonzero(dists)  # these are indices that clash
     else:
         a1s = numpy.array_split(
@@ -496,7 +501,7 @@ def indices_of_close_pts(points1, points2, cutoff: float, num_sub_partitions: in
             a2s_index = 0
             for points2 in a2s:
                 if len(points1) > 0 and len(points2) > 0:
-                    dists = cdist(points1, points2) < cutoff
+                    dists = scipy.spatial.distance.cdist(points1, points2) < cutoff
                     indices = numpy.nonzero(dists)
                     points1_indices.extend(indices[0] + a1s_index)
                     points2_indices.extend(indices[1] + a2s_index)

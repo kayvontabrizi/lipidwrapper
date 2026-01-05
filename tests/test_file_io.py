@@ -1,8 +1,8 @@
 ## imports
 
 # standard
-import os
 import gzip
+import os
 
 # custom
 import pytest

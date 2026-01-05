@@ -16,11 +16,11 @@ def print_out_mesh_points(all_triangles: list, params: dict):
 
     """
 
-    def create_pdb_line(numpy_array, letter: str):
+    def create_pdb_line(array: numpy.ndarray, letter: str):
         """Create a string formatted according to the PDB standard from the atomic information contained in this atom class.
 
         Arguments:
-        numpy_array -- A numpy array, containing the atom coordinates
+        array -- A numpy array, containing the atom coordinates
         letter -- A string, which will serve as the atom name, residue name, chain, etc.
 
         Returns:
@@ -37,9 +37,9 @@ def print_out_mesh_points(all_triangles: list, params: dict):
             + letter.rjust(2)
             + "0".rjust(4)
         )
-        output = output + ("%.3f" % numpy_array[0]).rjust(12)
-        output = output + ("%.3f" % numpy_array[1]).rjust(8)
-        output = output + ("%.3f" % numpy_array[2]).rjust(8)
+        output = output + ("%.3f" % array[0]).rjust(12)
+        output = output + ("%.3f" % array[1]).rjust(8)
+        output = output + ("%.3f" % array[2]).rjust(8)
         output = output + letter.rjust(24)
         return output
 

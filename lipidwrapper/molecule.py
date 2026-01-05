@@ -6,10 +6,7 @@ import math
 
 # custom
 import numpy
-from scipy.spatial.distance import cdist
-
-# local
-from . import numpy_extensions
+import scipy.spatial.distance
 
 
 ## methods
@@ -451,7 +448,7 @@ class Triangle:
         try:
             return self.radii_lengths
         except:
-            self.radii_lengths = cdist(
+            self.radii_lengths = scipy.spatial.distance.cdist(
                 numpy.array([self.center()]), self.points, "euclidean"
             )
             return self.radii_lengths
@@ -682,7 +679,9 @@ class Triangle:
         """
 
         # check if the two triangles share a corner
-        dists_between_triangle_pts = cdist(self.points, other_triangle.points)
+        dists_between_triangle_pts = scipy.spatial.distance.cdist(
+            self.points, other_triangle.points
+        )
         if True in (dists_between_triangle_pts == 0.0):
             return True  # so they are adjacent
 

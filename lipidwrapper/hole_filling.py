@@ -6,10 +6,7 @@ import random
 
 # custom
 import numpy
-import scipy
-import scipy.spatial
-from scipy.spatial.distance import cdist
-from scipy.spatial.distance import pdist
+import scipy.spatial.distance
 
 # local
 from . import multiprocessing_utils
@@ -64,7 +61,9 @@ def fill_in_lipid_holes(molecules_by_triangle: list, params: dict):
         index_to_try = index_to_try + 1
 
     headgroup_locs = numpy.vstack(headgroup_locs)
-    headgroup_dists = scipy.spatial.distance.squareform(pdist(headgroup_locs))
+    headgroup_dists = scipy.spatial.distance.squareform(
+        scipy.spatial.distance.pdist(headgroup_locs)
+    )
     headgroup_min_dists = numpy.empty(len(headgroup_dists))
 
     for indx in range(len(headgroup_dists)):
@@ -386,7 +385,7 @@ def fill_in_lipid_holes(molecules_by_triangle: list, params: dict):
                                 new_head_group_loc + plane_normal,
                             ]
                         )
-                        dists_to_center = cdist(
+                        dists_to_center = scipy.spatial.distance.cdist(
                             candidates_pts, numpy.array([triangle_pts.center()])
                         )
 
@@ -470,7 +469,7 @@ def fill_in_lipid_holes(molecules_by_triangle: list, params: dict):
 
                         # check to see if the positioned lipid clashes with other lipids
                         some_clash = False
-                        first_pt_dists = cdist(
+                        first_pt_dists = scipy.spatial.distance.cdist(
                             headgroup_locs_of_lipids_that_could_clash,
                             numpy.array([lipid_head_loc]),
                         )
@@ -496,7 +495,7 @@ def fill_in_lipid_holes(molecules_by_triangle: list, params: dict):
 
                             if len(positioned_molecules_headgroup_locs) > 0:
 
-                                positioned_pt_dists = cdist(
+                                positioned_pt_dists = scipy.spatial.distance.cdist(
                                     numpy.array(positioned_molecules_headgroup_locs),
                                     numpy.array([lipid_head_loc]),
                                 )
@@ -526,7 +525,9 @@ def fill_in_lipid_holes(molecules_by_triangle: list, params: dict):
 
                             # now remove surface points from local_pts_to_examine that come close to the newly positioned lipid
                             dists = (
-                                cdist(lipid.all_atoms_numpy, local_pts_to_examine)
+                                scipy.spatial.distance.cdist(
+                                    lipid.all_atoms_numpy, local_pts_to_examine
+                                )
                                 < min_dist_between_headgroups
                             )  # which ones clash
                             indices_of_clashing_pts = numpy.nonzero(dists)[
