@@ -3,6 +3,7 @@
 # standard
 import gc
 import random
+import typing
 
 # custom
 import numpy
@@ -18,21 +19,8 @@ from . import lipid_positioning
 ## methods
 
 
-def fill_in_lipid_holes(molecules_by_triangle: list, params: dict):
-    """Position lipid molecules in the bilayer holes
-
-    Arguments:
-    molecules_by_triangle -- A list of tuples, where each tuple contains a Triangle object and a list of lipid molecules (Molecule objects) that belong to that triangle
-    params -- A dictionary, the user-specified command-line parameters
-
-    Returns:
-    A list of tuples, where each tuple contains a Triangle object, a list of lipid molecules (Molecule objects) that belong to that triangle, and an integer representing the index in the molecules_by_triangle list
-
-    """
-
-    headgroup_locs = (
-        []
-    )  # this does need to be a list rather than presized numpy arrays because its hard to know a priori how big it needs to be
+def fill_in_lipid_holes(molecules_by_triangle: list, params: dict) -> list:
+    headgroup_locs = []
 
     index_to_try = 0
     while (
@@ -101,17 +89,9 @@ def fill_in_lipid_holes(molecules_by_triangle: list, params: dict):
                     adjacent_triangles_map[index2].append(index1)
 
     class lipid_inserts_multiprocessing(multiprocessing_utils.general_task):
-        """A class for inserting lipid molecules into bilayer holes"""
-
-        def value_func(self, item, results_queue):
-            """Insert lipid molecules into bilayer holes
-
-            Arguments:
-            item -- A list or tuple, the input data required for the calculation
-            results_queue -- A multiprocessing.Queue() object for storing the calculation output
-
-            """
-
+        def value_func(
+            self, item: tuple, results_queue: typing.Optional[typing.Any]
+        ) -> None:
             molecules_by_triangle_index = item[0]
             triangle_pts = item[1]
             lipids = item[2]

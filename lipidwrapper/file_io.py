@@ -6,25 +6,13 @@ import os
 import pickle
 import random
 import string
+import typing
 
 
 ## methods
 
 
-def save_pickle(item, params: dict, an_id: str = ""):
-    """Save an object to a pickle file
-
-    Arguments:
-    item -- The object to be saved
-    item -- A dictionary, the user-specified comand-line parameters
-    an_id -- An optional string, the id of the pickled object
-
-    Returns:
-    A string, the id of the current pickle. If the user-specified an_id is '', then a random an_id is generated.
-
-    """
-
-    # make an initial guess at hte pickle name
+def save_pickle(item: typing.Any, params: dict, an_id: str = "") -> str:
     filename = params["memory_store_dir"] + an_id + ".pickle"
 
     # need to make up an id, change filename, if an_id is not specified
@@ -51,19 +39,8 @@ def save_pickle(item, params: dict, an_id: str = ""):
     return an_id  # let user know what an_id you settled on
 
 
-def load_pickle(an_id: str, params: dict):
-    """Save an object to a pickle file
-
-    Arguments:
-    an_id -- A string, the id of the pickled object to load
-    params -- A dictionary, the user-specified comand-line parameters
-
-    Returns:
-    A python object, loaded from the pickle file
-
-    """
-
-    while True:  # keep trying to return the pickle until you succeed.
+def load_pickle(an_id: str, params: dict) -> typing.Any:
+    while True:
         try:
             return pickle.load(
                 gzip.open(params["memory_store_dir"] + an_id + ".pickle", "rb")
@@ -72,8 +49,10 @@ def load_pickle(an_id: str, params: dict):
             pass
 
 
-def openfile(filename: str, mode: str, params: dict):
-    if params["compress_output"] == "TRUE":  # open a gzip file
+def openfile(
+    filename: str, mode: str, params: dict
+) -> typing.Union[gzip.GzipFile, typing.IO]:
+    if params["compress_output"] == "TRUE":
         return gzip.open(filename + ".gz", mode)
-    else:  # open a regular file
+    else:
         return open(filename, mode)

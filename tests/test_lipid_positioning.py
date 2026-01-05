@@ -10,6 +10,9 @@ from lipidwrapper import lipid_positioning
 from lipidwrapper import numpy_extensions
 
 
+## classes
+
+
 class TestGetTransformationData:
     def test_identity_transformation(self):
         points = numpy.array([[0.0, 0.0, 0.0], [1.0, 0.0, 0.0], [0.0, 1.0, 0.0]])

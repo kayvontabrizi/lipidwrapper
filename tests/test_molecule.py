@@ -6,10 +6,12 @@ import math
 # custom
 import numpy
 import numpy.testing
-import pytest
 
 # local
 from lipidwrapper import molecule
+
+
+## classes
 
 
 class TestUnitVector:

@@ -5,10 +5,12 @@ import gzip
 import os
 
 # custom
-import pytest
 
 # local
 from lipidwrapper import file_io
+
+
+## classes
 
 
 class TestSavePickle:

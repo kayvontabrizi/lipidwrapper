@@ -11,23 +11,16 @@ import numpy
 
 
 class Quaternion:
-    """A class supporting quaternion arithmetic"""
+    v: numpy.ndarray
 
-    def __init__(self, s, x, y, z):
+    def __init__(self, s: float, x: float, y: float, z: float) -> None:
         self.v = numpy.empty(4)
         self.v[0] = s
         self.v[1] = x
         self.v[2] = y
         self.v[3] = z
 
-    def __str__(self):
-        """String containing quaternion information in the form of s x y z
-
-        Returns:
-        A string, containing all information about this quaternion
-
-        """
-
+    def __str__(self) -> str:
         return (
             ""
             + str(self.v[0])
@@ -39,20 +32,10 @@ class Quaternion:
             + str(self.v[3])
         )
 
-    def copy_of(self):
-        """Returns a copy of self"""
-
+    def copy_of(self) -> "Quaternion":
         return Quaternion(self.v[0], self.v[1], self.v[2], self.v[3])
 
-    def load_from_mat(self, m):
-        """Converts a rotation matrix that is pure orthogonal (det(matrix)=1) into a Quaternion. Adapted from http://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToQuaternion/index.htm
-
-        Arguments:
-        m -- A 2D numpy.array representing a pure orthogonal matrix
-
-        """
-
-        # Make sure m is a 3x3 array
+    def load_from_mat(self, m: numpy.ndarray) -> None:
         if m.shape[0] != 3 or m.shape[1] != 3:
             print("Could not load quaternion from matrix...size is not (3x3)")
             return
@@ -95,14 +78,7 @@ class Quaternion:
             self.v[2] = (m[2, 1] + m[1, 2]) / S
             self.v[3] = 0.25 * S
 
-    def rep_as_44_matrix(self):
-        """Creates a 4x4 matrix representation of the Quaternion.
-
-        Returns:
-        A 4x4 numpy array
-
-        """
-
+    def rep_as_44_matrix(self) -> numpy.ndarray:
         n = self.normalize()
         qw = n.v[0]
         qx = n.v[1]
@@ -118,15 +94,7 @@ class Quaternion:
             ]
         )
 
-    def to_matrix(self):
-        """Converts to a normalized 3x3 matrix
-
-        Returns:
-        A 3x3 numpy.array, corresponding to the quaternion
-
-        """
-
-        # First normalize
+    def to_matrix(self) -> numpy.ndarray:
         n = self.normalize()
         qw = n.v[0]
         qx = n.v[1]
@@ -152,17 +120,7 @@ class Quaternion:
             ]
         )
 
-    def add(self, q2):
-        """Adds two quaternions
-
-        Arguments:
-        q2 -- A quaternion, to be added to self
-
-        Returns:
-        A Quaternion, with the values corresponding to self + q2
-
-        """
-
+    def add(self, q2: "Quaternion") -> "Quaternion":
         return Quaternion(
             self.v[0] + q2.v[0],
             self.v[1] + q2.v[1],
@@ -170,27 +128,10 @@ class Quaternion:
             self.v[3] + q2.v[3],
         )
 
-    def invert(self):
-        """Takes the inverse of the quaternion for "division"
-
-        Returns:
-        A Quaternion, with the values corresponding to self^-1
-
-        """
-
+    def invert(self) -> "Quaternion":
         return Quaternion(self.v[0], -1 * self.v[1], -1 * self.v[2], -1 * self.v[3])
 
-    def minus(self, q2):
-        """Multiplies two quaternions
-
-        Arguments:
-        q2 -- A quaternion, to be subtracted from self
-
-        Returns:
-        A Quaternion, with the values corresponding to self - q2
-
-        """
-
+    def minus(self, q2: "Quaternion") -> "Quaternion":
         return Quaternion(
             self.v[0] - q2.v[0],
             self.v[1] - q2.v[1],
@@ -198,17 +139,7 @@ class Quaternion:
             self.v[3] - q2.v[3],
         )
 
-    def multiply(self, q2):
-        """Multiplies two quaternions
-
-        Arguments:
-        q2 -- A quaternion, to be multiplied with self
-
-        Returns:
-        A Quaternion, with the values corresponding to self * q2
-
-        """
-
+    def multiply(self, q2: "Quaternion") -> "Quaternion":
         return Quaternion(
             self.v[0] * q2.v[0]
             - self.v[1] * q2.v[1]
@@ -228,15 +159,7 @@ class Quaternion:
             + self.v[3] * q2.v[0],
         )
 
-    def normalize(self):
-        """Normalizes the quaternion
-
-        Returns:
-        A normalized Quaternion
-
-        """
-
-        # First normalize
+    def normalize(self) -> "Quaternion":
         n = math.sqrt(
             math.pow(self.v[0], 2)
             + math.pow(self.v[1], 2)
@@ -246,17 +169,7 @@ class Quaternion:
 
         return Quaternion(self.v[0] / n, self.v[1] / n, self.v[2] / n, self.v[3] / n)
 
-    def scale(self, scalar):
-        """Scales a quaternion
-
-        Arguments:
-        scalar -- the value to scale the quaternion by
-
-        Returns:
-        A Quaternion, with the values corresponding to self * scalar
-
-        """
-
+    def scale(self, scalar: float) -> "Quaternion":
         return Quaternion(
             self.v[0] * scalar,
             self.v[1] * scalar,
@@ -268,25 +181,13 @@ class Quaternion:
 ## methods
 
 
-def get_numpy_slice(numpy_array, indices):
-    """A replacement for numpy's numpy_array[indices] functionality, where numpy_array and indices are both matrices.
-    Unlike numpy's default behavior, this function returns an empty array if b is empty, rather than throwing an error.
-
-    Arguments:
-    numpy_array -- A numpy array
-    indices -- A numpy array, the indices of the elements of numpy_array to return.
-
-    Returns:
-    A numpy array, numpy_array[indices] if indices is not empty, an empty numpy array otherwise.
-
-    """
-
+def get_numpy_slice(
+    numpy_array: numpy.ndarray, indices: numpy.ndarray
+) -> numpy.ndarray:
     try:
         return numpy_array[indices]
     except:
         if len(indices) == 0:
-            return numpy.array(
-                []
-            )  # why in the world isn't this numpy's default behavior?
+            return numpy.array([])
         else:
             print("Error!")

@@ -1,36 +1,26 @@
 ## imports
 
 # standard
-import sys
-import random
 import multiprocessing
+import random
+import sys
+import typing
 
 
 ## classes
 
 
 class multi_threading:
-    """A class for running calculations on multiple processors"""
-
-    results = []
+    results: list
 
     def __init__(
-        self, inputs, num_processors, task_class, params, progress_bar_prefix=""
-    ):
-        """Launches a calculation on multiple processors
-
-        Arguments:
-        inputs -- A list, containing all the input required for the calculation
-        num_processors -- An integer, the requested number of processors to use
-        task_class -- An class, the class governing what calculations will be run on a given thread
-        progress_bar_prefix -- An optional string, the prefix to append to the progress bar
-
-        Returns:
-        Nothing, though the objects self.results list is populated with the calculation results
-
-        """
-
-        # set up the progress bar
+        self,
+        inputs: list,
+        num_processors: int,
+        task_class: type,
+        params: dict,
+        progress_bar_prefix: str = "",
+    ) -> None:
         self.results = []
         indices_to_star = []
         if len(inputs) < 50:
@@ -123,33 +113,24 @@ class multi_threading:
 
 
 class general_task:
-    """A parent class of others that governs what calculations are run on each thread"""
+    results: list
+    indices_to_star: list
+    total_num_tasks: int
 
-    results = []
+    def __init__(self) -> None:
+        self.results = []
 
-    def print_star_if_appropriate(self, current_index: int):
-        """If appropriate, prints an asterix as part of the progress bar
-
-        Arguments:
-        current_index -- An integer, the index of the current calculation
-
-        """
-
-        # if the current index is one of the ones that you should star, write out the asterix
+    def print_star_if_appropriate(self, current_index: int) -> None:
         if current_index in self.indices_to_star:
             sys.stdout.write("*")
 
-    def runit(self, running, mutex, results_queue, items):
-        """Launches the calculations on this thread
-
-        Arguments:
-        running -- A multiprocessing.Value object
-        mutex -- A multiprocessing.Lock object
-        results_queue -- A multiprocessing.Queue() object for storing the calculation output
-        items -- A list, the input data required for the calculation
-
-        """
-
+    def runit(
+        self,
+        running: multiprocessing.Value,
+        mutex: multiprocessing.Lock,
+        results_queue: multiprocessing.Queue,
+        items: list,
+    ) -> None:
         for item in items:
             self.value_func(item, results_queue)
 
@@ -157,3 +138,8 @@ class general_task:
         running.value -= 1
         mutex.release()
         results_queue.put(self.results)
+
+    def value_func(
+        self, item: typing.Any, results_queue: typing.Optional[multiprocessing.Queue]
+    ) -> None:
+        raise NotImplementedError("Subclasses must implement value_func")

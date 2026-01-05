@@ -4,6 +4,7 @@
 import gc
 import math
 import sys
+import typing
 import warnings
 
 # custom
@@ -20,18 +21,7 @@ from . import file_io
 ## methods
 
 
-def load_mesh_points_and_triangulations(params: dict):
-    """Load mesh points and perform a tesselation/triangulation if neceesary
-
-    Arguments:
-    params -- A dictionary, the user-specified comand-line parameters
-
-    Returns:
-    A list of Triangle objects, the tesselation/triangulation
-
-    """
-
-    # load the mesh points from whatever source the user specifried
+def load_mesh_points_and_triangulations(params: dict) -> list[molecule.Triangle]:
     pts = molecule.Molecule()
     all_triangles = None
 
@@ -184,19 +174,9 @@ def load_mesh_points_and_triangulations(params: dict):
     return all_triangles_obj
 
 
-def load_lipid_model(params: dict):
-    """Load the user-provided planar bilayer model
-
-    Arguments:
-    params -- A dictionary, the user-specified command-line parameters
-
-    Returns:
-    A Molecule object containing the planar bilayer model, a 1x3 numpy array representing the minimum corner of a bounding box, and a 1x3 numpy array representing the maximum corner of a bounding box.
-
-    """
-
-    # Now load the lipid pdb, which should also be oriented so Z is up
-    # The lipid must have unique resids too. This is standard.
+def load_lipid_model(
+    params: dict,
+) -> tuple[molecule.Molecule, numpy.ndarray, numpy.ndarray]:
     lipid = molecule.Molecule()
     lipid.load_pdb(params["lipid_pdb_filename"])
 
@@ -217,19 +197,9 @@ def load_lipid_model(params: dict):
     return lipid, min_headgroups, max_headgroups
 
 
-def get_transformation_data(tethers1_static, tethers2_dynamic):
-    """Determines how to translate and rotate one set of points onto another
-
-    Arguments:
-    tethers1_static -- An nx3 numpy array, the points that will remain fixed
-    tethers2_dynamic -- An nx3 numpy array, the points that will be moved on to the points in tethers1_static. Note that both inputs must have the same point order.
-
-    Returns:
-    A tuple containing a 1x3 numpy array representing the center of the tethers2_dynamic points, a quarterion describing the required translation/rotation, and a 1x3 numpy array representing the center of the tethers1_static points
-
-    """
-
-    # Get the transformation matrix to move the dynamic_template onto the guide_static_template
+def get_transformation_data(
+    tethers1_static: numpy.ndarray, tethers2_dynamic: numpy.ndarray
+) -> tuple[numpy.ndarray, numpy_extensions.Quaternion, numpy.ndarray]:
     center_tethers1_pdb = numpy.mean(tethers1_static, 0)
     center_tethers2_pdb = numpy.mean(tethers2_dynamic, 0)
 
@@ -281,15 +251,7 @@ def get_transformation_data(tethers1_static, tethers2_dynamic):
     return (center_tethers2_pdb, rot_quat, center_tethers1_pdb)
 
 
-def apply_transformation(mol, transform_data: tuple):
-    """Translate and rotate a molecule
-
-    Arguments:
-    mol -- A Molecule object, to be translated and rotated
-    transform_data -- A tuple containing the output of the get_transformation_data() function
-
-    """
-
+def apply_transformation(mol: molecule.Molecule, transform_data: tuple) -> None:
     center_dynamic_pdb = transform_data[0]
     rot_quat = transform_data[1]
     center_static_pdb = transform_data[2]
@@ -302,37 +264,18 @@ def apply_transformation(mol, transform_data: tuple):
 
 
 def position_lipid_model_on_triangulated_tiles(
-    params: dict, lipid, all_triangles: list, min_headgroups, max_headgroups
-):
-    """Position portions of the user-specified planar bilayer onto the tessellated/triangled surface
-
-    Arguments:
-    params -- A dictionary, the user-specified command-line parameters
-    lipid -- A Molecule object containing the initial user-specified planar bilayer model
-    all_triangles -- A list of Triangle objects, the tesselation/triangulation
-    min_headgroups -- A 1x3 numpy array representing the minimum corner of a bounding box
-    max_headgroups -- A 1x3 numpy array representing the maximum corner of a bounding box
-
-    Returns:
-    A list of tuples, where each tuple contains a Triangle object and a list of lipid molecules (Molecule objects) that belong to that triangle
-
-    """
-
-    # position the lipid bilayers on the tiles
+    params: dict,
+    lipid: molecule.Molecule,
+    all_triangles: list[molecule.Triangle],
+    min_headgroups: numpy.ndarray,
+    max_headgroups: numpy.ndarray,
+) -> list:
     lipid.set_undo_point()
 
     class position_lipids_multiprocessing(multiprocessing_utils.general_task):
-        """A class for positioning lipid models onto a 3D mesh"""
-
-        def value_func(self, item, results_queue):
-            """Position lipid models onto a 3D mesh
-
-            Arguments:
-            item -- A list or tuple, the input data required for the calculation
-            results_queue -- A multiprocessing.Queue() object for storing the calculation output
-
-            """
-
+        def value_func(
+            self, item: tuple, results_queue: typing.Optional[typing.Any]
+        ) -> None:
             params = item[0]
             lipid = item[1]
             tile_triangle = item[2]

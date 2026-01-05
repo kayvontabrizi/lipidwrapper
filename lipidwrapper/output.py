@@ -7,27 +7,8 @@ import numpy
 ## methods
 
 
-def print_out_mesh_points(all_triangles: list, params: dict):
-    """Save the mesh points to a PDB file
-
-    Arguments:
-    all_triangles -- A list of Triangle objects, the tesselation/triangulation
-    params -- A dictionary, the user-specified command-line parameters
-
-    """
-
-    def create_pdb_line(array: numpy.ndarray, letter: str):
-        """Create a string formatted according to the PDB standard from the atomic information contained in this atom class.
-
-        Arguments:
-        array -- A numpy array, containing the atom coordinates
-        letter -- A string, which will serve as the atom name, residue name, chain, etc.
-
-        Returns:
-        A string, formatted according to the PDB standard.
-
-        """
-
+def print_out_mesh_points(all_triangles: list, params: dict) -> None:
+    def create_pdb_line(array: numpy.ndarray, letter: str) -> str:
         output = "ATOM "
         output = (
             output
@@ -86,16 +67,7 @@ def print_out_mesh_points(all_triangles: list, params: dict):
         f.close()
 
 
-def print_out_triangle_tcl_file(all_triangles: list, params: dict):
-    """Save the tesselation/triangulation to a TCL file
-
-    Arguments:
-    all_triangles -- A list of Triangle objects, the tesselation/triangulation
-    params -- A dictionary, the user-specified command-line parameters
-
-    """
-
-    # draw triangles
+def print_out_triangle_tcl_file(all_triangles: list, params: dict) -> None:
     f = open(params["output_directory"] + "triangles.tcl", "w")
     f.write("draw delete all\n")
     f.write("draw color red\n")

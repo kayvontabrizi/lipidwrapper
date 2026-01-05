@@ -1,0 +1,21 @@
+[project]
+name = "lipidwrapper"
+version = "2.0.0"
+description = "A tool for wrapping lipid bilayers around 3D surfaces"
+readme = "README.md"
+license = "BSD-2-Clause"
+requires-python = ">=3.10"
+dependencies = [
+    "numpy",
+    "scipy",
+]
+
+[project.optional-dependencies]
+image = ["Pillow"]
+dev = [
+    "pytest",
+    "black",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

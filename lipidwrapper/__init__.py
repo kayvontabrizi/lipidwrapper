@@ -48,6 +48,7 @@ import os
 import shutil
 import sys
 import time
+import typing
 
 # local
 from . import clash_removal
@@ -63,29 +64,18 @@ from . import output
 
 ## constants
 
-version = "1.15"
+version = "2.0.0"
 
 
 ## methods
 
 
-def run_program(argv: list):
-    starttime = time.time()  # to keep track of execution time
+def run_program(argv: list[str]) -> None:
+    starttime = time.time()
 
     current_step = 0  # used for output filenames
 
     print("\nREMARK      LipidWrapper " + version + "\n")
-
-    # check for Tkinter
-    try:
-        import tkinter
-
-        print("REMARK      The Tkinter python module is available. You may prefer to")
-        print("REMARK      use the LipidWrapper graphical user interface")
-        print("REMARK      (lipidwrapperGUI.py).\n")
-        del Tkinter
-    except:
-        pass  # GUI not available
 
     params = cli.get_commandline_parameters(argv)  # get the commandline parameters
 
@@ -137,17 +127,9 @@ def run_program(argv: list):
         class save_positioned_lipids_multiprocessing(
             multiprocessing_utils.general_task
         ):
-            """A class for saving the lipid molecules associated with each triangle"""
-
-            def value_func(self, item, results_queue):
-                """Save lipid molecules associated with a triangle
-
-                Arguments:
-                item -- A list or tuple, the input data required for the calculation
-                results_queue -- A multiprocessing.Queue() object for storing the calculation output
-
-                """
-
+            def value_func(
+                self, item: tuple, results_queue: typing.Optional[typing.Any]
+            ) -> None:
                 lipids = item[0]
                 i = item[1]
                 current_step = item[2]
@@ -219,17 +201,9 @@ def run_program(argv: list):
             class save_nondeleted_lipids_multiprocessing(
                 multiprocessing_utils.general_task
             ):
-                """A class for saving the lipid molecules that were not deleted"""
-
-                def value_func(self, item, results_queue):
-                    """Save lipid molecules that were not deleted
-
-                    Arguments:
-                    item -- A list or tuple, the input data required for the calculation
-                    results_queue -- A multiprocessing.Queue() object for storing the calculation output
-
-                    """
-
+                def value_func(
+                    self, item: tuple, results_queue: typing.Optional[typing.Any]
+                ) -> None:
                     triangle_index = item[0]
                     dir_pathname = item[1]
                     current_step = item[2]
@@ -311,17 +285,9 @@ def run_program(argv: list):
                 class save_plugging_lipids_multiprocessing(
                     multiprocessing_utils.general_task
                 ):
-                    """A class for saving the lipid molecules that were placed in lipid holes"""
-
-                    def value_func(self, item, results_queue):
-                        """Save lipid molecules that were placed in lipid holes
-
-                        Arguments:
-                        item -- A list or tuple, the input data required for the calculation
-                        results_queue -- A multiprocessing.Queue() object for storing the calculation output
-
-                        """
-
+                    def value_func(
+                        self, item: tuple, results_queue: typing.Optional[typing.Any]
+                    ) -> None:
                         triangle_lipids = item[0]
                         index = item[1]
                         dir_pathname = item[2]
@@ -375,17 +341,9 @@ def run_program(argv: list):
                 class add_plugging_lipids_multiprocessing(
                     multiprocessing_utils.general_task
                 ):
-                    """A class for adding the lipid molecules used to plug lipid holes to the list of lipids associated with the relevant triangle"""
-
-                    def value_func(self, item, results_queue):
-                        """Add lipid molecules used to plug holes to their associated triangles
-
-                        Arguments:
-                        item -- A list or tuple, the input data required for the calculation
-                        results_queue -- A multiprocessing.Queue() object for storing the calculation output
-
-                        """
-
+                    def value_func(
+                        self, item: tuple, results_queue: typing.Optional[typing.Any]
+                    ) -> None:
                         existing_lipids_pickle_id = item[0]
                         position_lipids_pickle_id = item[1]
                         params = item[3]
@@ -426,17 +384,9 @@ def run_program(argv: list):
                 class save_plugged_lipids_multiprocessing(
                     multiprocessing_utils.general_task
                 ):
-                    """A class for saving the lipid molecules used to plug lipid holes"""
-
-                    def value_func(self, item, results_queue):
-                        """Save lipid molecules used to plug lipid holes
-
-                        Arguments:
-                        item -- A list or tuple, the input data required for the calculation
-                        results_queue -- A multiprocessing.Queue() object for storing the calculation output
-
-                        """
-
+                    def value_func(
+                        self, item: tuple, results_queue: typing.Optional[typing.Any]
+                    ) -> None:
                         index = item[0]
                         dir_pathname = item[1]
                         current_step = item[2]
@@ -510,17 +460,9 @@ def run_program(argv: list):
         )
 
         class save_final_lipids_multiprocessing(multiprocessing_utils.general_task):
-            """A class for saving the final lipid models"""
-
-            def value_func(self, item, results_queue):
-                """Save the final lipid models
-
-                Arguments:
-                item -- A list or tuple, the input data required for the calculation
-                results_queue -- A multiprocessing.Queue() object for storing the calculation output
-
-                """
-
+            def value_func(
+                self, item: tuple, results_queue: typing.Optional[typing.Any]
+            ) -> None:
                 params = item[0]
                 lipids_lists = item[1]
                 dir_pathname = item[2]

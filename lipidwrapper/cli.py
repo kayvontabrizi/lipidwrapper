@@ -1,25 +1,18 @@
 ## imports
 
 # standard
-import sys
 import getopt
-import textwrap
 import os
 import platform
+import sys
+import textwrap
+import typing
 
 
 ## methods
 
 
-def get_commandline_parameters(argv: list):
-    """Get the user-defined command-line parameters
-
-    Returns:
-    A dictionary, the user-specified command-line parameters
-
-    """
-
-    # first check if the user has requested the help file
+def get_commandline_parameters(argv: list[str]) -> dict[str, typing.Any]:
     if "--help" in [t.lower() for t in argv]:
         print()
         print("The initial lipid model")

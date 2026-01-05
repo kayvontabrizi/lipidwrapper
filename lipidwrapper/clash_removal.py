@@ -2,6 +2,7 @@
 
 # standard
 import gc
+import typing
 
 # custom
 import numpy
@@ -15,27 +16,11 @@ from . import file_io
 ## methods
 
 
-def remove_steric_clashes(molecules_by_triangle: list, params: dict):
-    """Remove lipids that have steric clashes
-
-    Arguments:
-    molecules_by_triangle -- A list of tuples, where each tuple contains a Triangle object and a list of lipid molecules (Molecule objects) that belong to that triangle
-    params -- A dictionary, the user-specified command-line parameters
-
-    """
-
+def remove_steric_clashes(molecules_by_triangle: list, params: dict) -> None:
     class remove_clashes_multiprocessing(multiprocessing_utils.general_task):
-        """A class for identifying lipids that have steric clashes"""
-
-        def value_func(self, item, results_queue):
-            """Identify lipids that have steric clashes
-
-            Arguments:
-            item -- A list or tuple, the input data required for the calculation
-            results_queue -- A multiprocessing.Queue() object for storing the calculation output
-
-            """
-
+        def value_func(
+            self, item: tuple, results_queue: typing.Optional[typing.Any]
+        ) -> None:
             triangle_index1 = item[0]
             triangle_index2 = item[1]
             triangle1 = item[2]
@@ -241,19 +226,10 @@ def remove_steric_clashes(molecules_by_triangle: list, params: dict):
         del clash_map[most_clashes_mol_index]
     gc.enable()
 
-    # now delete the lipids that have been marked for deletion by being assigned a value of None
     class remove_clashes2_multiprocessing(multiprocessing_utils.general_task):
-        """A class for removing lipids that have steric clashes"""
-
-        def value_func(self, item, results_queue):
-            """Remove lipids that have steric clashes
-
-            Arguments:
-            item -- A list or tuple, the input data required for the calculation
-            results_queue -- A multiprocessing.Queue() object for storing the calculation output
-
-            """
-
+        def value_func(
+            self, item: tuple, results_queue: typing.Optional[typing.Any]
+        ) -> None:
             triangle_index = item[0]
             lipid_indices_to_delete = item[1]
             lipids_list = item[2]
@@ -323,29 +299,13 @@ def remove_steric_clashes(molecules_by_triangle: list, params: dict):
 
 
 def two_lipids_clash(
-    mol1,
-    mol2,
+    mol1: typing.Union[numpy.ndarray, typing.Any],
+    mol2: typing.Union[numpy.ndarray, typing.Any],
     cutoff: float,
     num_sub_partitions: int,
     params: dict,
     very_large_distance_check: bool = True,
-):
-    """Determine whether two lipid molecules clash
-
-    Arguments:
-    mol1 -- A Molecule object, the first lipid
-    mol2 -- A Molecule object, the second lipid
-    cutoff -- A float, how close the two lipids must be to constitute a "clash"
-    num_sub_partitions -- An integer, the number of partitions into which the atoms of each lipid molecule are divided. Clashes are then determined pairwise on each partition, rather than comparing every atom of one lipid to every atom of the other. Important for large system to avoid memory problems, but it can usually just be set to 1.
-    params -- A dictionary, the user-specified comand-line parameters
-    very_large_distance_check -- An optional Boolean, to enable the option of eliminating steric clashes early by examining the distance between the first atoms of each lipid
-
-    Returns:
-    A Boolean, True if the two lipids clash, False otherwise.
-
-    """
-
-    # of the user provided a Molecule object, use just the coordinate numpy array
+) -> bool:
     if not type(mol1) is numpy.ndarray:
         mol1 = mol1.all_atoms_numpy
     if not type(mol2) is numpy.ndarray:
@@ -468,20 +428,12 @@ def two_lipids_clash(
     return False
 
 
-def indices_of_close_pts(points1, points2, cutoff: float, num_sub_partitions: int):
-    """Examine two sets of points and return the indices of the points that are close to each other
-
-    Arguments:
-    points1 -- A nx3 numpy array, a set of points to be considered
-    points2 -- A nx3 numpy array, a second set of points to be considered
-    cutoff -- A float, how close the two lipids must be to constitute a "clash"
-    num_sub_partitions -- An integer, the number of partitions into which the atoms of each lipid molecule are divided. Clashes are then determined pairwise on each partition, rather than comparing every atom of one lipid to every atom of the other. Important for large system to avoid memory problems, but it can usually just be set to 1.
-
-    Returns:
-    A tuple, containing a numpy array with indices from the first molecule and a numpy array with indices from the second molecule
-
-    """
-
+def indices_of_close_pts(
+    points1: numpy.ndarray,
+    points2: numpy.ndarray,
+    cutoff: float,
+    num_sub_partitions: int,
+) -> tuple[numpy.ndarray, numpy.ndarray]:
     if num_sub_partitions == 1:
         dists = (
             scipy.spatial.distance.cdist(points1, points2) < cutoff
