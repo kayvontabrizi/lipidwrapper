@@ -32,7 +32,6 @@ either expressed or implied, of the FreeBSD Project.
 
 __all__ = [
     "clash_removal",
-    "cli",
     "file_io",
     "hole_filling",
     "lipid_positioning",
@@ -45,20 +44,21 @@ __all__ = [
 # standard
 import gc
 import os
+import pathlib
+import platform
 import shutil
-import sys
 import time
 import typing
 
+# custom
+import typer
+
 # local
 from . import clash_removal
-from . import cli
 from . import file_io
 from . import hole_filling
 from . import lipid_positioning
-from . import molecule
 from . import multiprocessing_utils
-from . import numpy_extensions
 from . import output
 
 
@@ -66,50 +66,192 @@ from . import output
 
 version = "2.0.0"
 
+app = typer.Typer(
+    name="lipidwrapper",
+    help="Wrap lipid bilayers around 3D surfaces.",
+    add_completion=False,
+)
+
 
 ## methods
 
 
-def run_program(argv: list[str]) -> None:
-    starttime = time.time()
+@app.command()
+def main(
+    lipid_pdb_filename: pathlib.Path = typer.Option(
+        ...,
+        help="PDB file containing an all-atom model of a planar lipid bilayer.",
+    ),
+    lipid_headgroup_marker: str = typer.Option(
+        "_P,CHL1_O3",
+        help="Comma-separated list of atom specifications (RESNAME_ATOMNAME) identifying lipid headgroups.",
+    ),
+    surface_filename: str = typer.Option(
+        "",
+        help="Surface mesh file (PDB, DAE, or image file like PNG).",
+    ),
+    surface_equation: str = typer.Option(
+        "z = 100*numpy.sin(x*x/60000 +y*y/60000) * (-numpy.sqrt(x*x+y*y)/(560 * numpy.sqrt(2)) + 1)",
+        help="Python equation defining z given x and y. Supports math, numpy, and scipy functions.",
+    ),
+    min_x: float = typer.Option(500, help="Minimum x value for mesh generation."),
+    max_x: float = typer.Option(750, help="Maximum x value for mesh generation."),
+    min_y: float = typer.Option(500, help="Minimum y value for mesh generation."),
+    max_y: float = typer.Option(750, help="Maximum y value for mesh generation."),
+    step_x: float = typer.Option(30, help="X-distance between adjacent mesh points."),
+    step_y: float = typer.Option(30, help="Y-distance between adjacent mesh points."),
+    max_height: float = typer.Option(
+        0, help="Height of bilayer model at white regions (for image-based surfaces)."
+    ),
+    delete_clashing_lipids: bool = typer.Option(
+        False, help="Delete lipids that sterically clash at triangle interfaces."
+    ),
+    clash_cutoff: float = typer.Option(
+        2.0, help="Distance in Angstroms that constitutes a steric clash."
+    ),
+    clashing_potential_margin: float = typer.Option(
+        25.0,
+        help="Distance from triangle edges in Angstroms to check for clashes and holes.",
+    ),
+    fill_holes: bool = typer.Option(
+        True, help="Fill holes left by deleting clashing lipids."
+    ),
+    fill_hole_exhaustiveness: int = typer.Option(
+        10, help="How long LipidWrapper should try to fill holes."
+    ),
+    very_distant_lipids_cutoff: float = typer.Option(
+        50.0,
+        help="Skip clash checks for lipids further apart than this distance in Angstroms.",
+    ),
+    triangle_center_proximity_cutoff_distance: float = typer.Option(
+        50.0,
+        help="Distance cutoff for checking clashes between non-adjacent triangles.",
+    ),
+    memory_optimization_factor: int = typer.Option(
+        1,
+        help="Divide atom lists into chunks for pairwise comparisons to reduce memory usage.",
+    ),
+    number_of_processors: int = typer.Option(
+        1, help="Number of processors to use for parallel processing."
+    ),
+    show_grid_points: bool = typer.Option(
+        False, help="Append mesh grid points as atoms named 'X' to output."
+    ),
+    create_triangle_tcl_file: bool = typer.Option(
+        False, help="Generate triangles.tcl file for VMD visualization."
+    ),
+    output_directory: str = typer.Option(
+        "", help="Directory to save all output and intermediate files."
+    ),
+    use_disk_instead_of_memory: bool = typer.Option(
+        False, help="Store growing model on disk instead of memory for large systems."
+    ),
+    compress_output: bool = typer.Option(
+        False, help="Compress output files using gzip."
+    ),
+) -> None:
+    if platform.system().lower() == "windows" and number_of_processors > 1:
+        typer.echo(
+            "REMARK WARNING: Use of multiple processors is only supported on Linux and OS X."
+        )
+        number_of_processors = 1
 
-    current_step = 0  # used for output filenames
+    if not lipid_pdb_filename.exists():
+        typer.echo(
+            f"ERROR: The file specified by --lipid-pdb-filename ({lipid_pdb_filename}) does not exist.\n"
+        )
+        raise typer.Exit(1)
+
+    if output_directory and not output_directory.endswith("/"):
+        output_directory = output_directory + "/"
+
+    headgroup_markers = [
+        (None, marker.strip().split("_")[0], None, marker.strip().split("_")[1])
+        for marker in lipid_headgroup_marker.split(",")
+    ]
+
+    params = {
+        "surface_filename": surface_filename,
+        "surface_equation": surface_equation,
+        "min_x": min_x,
+        "max_x": max_x,
+        "min_y": min_y,
+        "max_y": max_y,
+        "step_x": step_x,
+        "step_y": step_y,
+        "max_height": max_height,
+        "lipid_pdb_filename": str(lipid_pdb_filename),
+        "lipid_headgroup_marker": headgroup_markers,
+        "show_grid_points": "TRUE" if show_grid_points else "FALSE",
+        "create_triangle_tcl_file": "TRUE" if create_triangle_tcl_file else "FALSE",
+        "delete_clashing_lipids": "TRUE" if delete_clashing_lipids else "FALSE",
+        "use_disk_instead_of_memory": "TRUE" if use_disk_instead_of_memory else "FALSE",
+        "clash_cutoff": clash_cutoff,
+        "fill_holes": "TRUE" if fill_holes else "FALSE",
+        "output_directory": output_directory,
+        "fill_hole_exhaustiveness": fill_hole_exhaustiveness,
+        "number_of_processors": number_of_processors,
+        "clashing_potential_margin": clashing_potential_margin,
+        "triangle_center_proximity_cutoff_distance": triangle_center_proximity_cutoff_distance,
+        "memory_optimization_factor": memory_optimization_factor,
+        "very_distant_lipids_cutoff": very_distant_lipids_cutoff,
+        "compress_output": "TRUE" if compress_output else "FALSE",
+        "memory_store_dir": output_directory + "store_in_memory.tmp/",
+    }
+
+    parameter_remarks = [
+        "REMARK Parameters: (use the --help command-line parameter for further explanation)"
+    ]
+    for param_name, param_value in params.items():
+        if param_name != "lipid_headgroup_marker":
+            parameter_remarks.append(f"REMARK      {param_name}: {param_value}")
+        else:
+            parameter_remarks.append(
+                f"REMARK      {param_name}: {lipid_headgroup_marker}"
+            )
+    parameter_remarks.append("")
+
+    if not output_directory:
+        typer.echo("\n".join(parameter_remarks))
+    else:
+        try:
+            os.mkdir(output_directory)
+        except FileExistsError:
+            pass
+        with open(output_directory + "parameters.input", "w") as parameter_file:
+            parameter_file.write("\n".join(parameter_remarks))
+
+    run_with_params(params)
+
+
+def run_with_params(params: dict[str, typing.Any]) -> None:
+    starttime = time.time()
+    current_step = 0
 
     print("\nREMARK      LipidWrapper " + version + "\n")
 
-    params = cli.get_commandline_parameters(argv)  # get the commandline parameters
-
-    # if you're going to be storing the growing model on the disk, make the temporary directory
     if params["use_disk_instead_of_memory"] == "TRUE":
         if os.path.exists(params["memory_store_dir"]):
             shutil.rmtree(params["memory_store_dir"])
         os.mkdir(params["memory_store_dir"])
 
-    # load mesh points and generate triangulation
     print("REMARK      Loading/creating and triangulating the mesh...")
-    all_triangles = lipid_positioning.load_mesh_points_and_triangulations(
-        params
-    )  # get the triangulations
+    all_triangles = lipid_positioning.load_mesh_points_and_triangulations(params)
 
-    # load in the user-specified planar bilayer model
     print(
         "REMARK      Loading the original lipid-bilayer model ("
         + params["lipid_pdb_filename"]
         + ")..."
     )
-    lipid, min_headgroups, max_headgroups = lipid_positioning.load_lipid_model(
-        params
-    )  # get the lipid molecule object, properly centered on x-y plane, as well as bounding-box coordinates
+    lipid, min_headgroups, max_headgroups = lipid_positioning.load_lipid_model(params)
 
-    # fill the tessellated triangles with bilayer sections
     print("REMARK      Position copies of the lipid bilayer on the trianguled mesh...")
     molecules_by_triangle = (
         lipid_positioning.position_lipid_model_on_triangulated_tiles(
             params, lipid, all_triangles, min_headgroups, max_headgroups
         )
-    )  # position the lipids on the triangles
+    )
 
-    # save the bilayer sections if user requested
     if params["output_directory"] != "":
         print("REMARK      Saving positioned lipid bilayers...")
         current_step = current_step + 1
@@ -173,14 +315,10 @@ def run_program(argv: list[str]) -> None:
             "REMARK ",
         )
 
-    # delete clashing lipids if user requested
     if params["delete_clashing_lipids"] == "TRUE":
         print("REMARK      Deleting lipids that sterically clash...")
-        clash_removal.remove_steric_clashes(
-            molecules_by_triangle, params
-        )  # remove steric clashes between lipids of adjacent tiles
+        clash_removal.remove_steric_clashes(molecules_by_triangle, params)
 
-        # save work from this step if user requested
         if params["output_directory"] != "":
             current_step = current_step + 1
             dir_pathname = (
@@ -193,7 +331,6 @@ def run_program(argv: list[str]) -> None:
             if not os.path.exists(dir_pathname):
                 os.mkdir(dir_pathname)
 
-            # print out remaining lipids
             print(
                 "REMARK            Saving the lipids that were not deleted for reference..."
             )
@@ -251,10 +388,7 @@ def run_program(argv: list[str]) -> None:
                 "REMARK ",
             )
 
-        # fill holes in bilayer if user requested
         if params["fill_holes"] == "TRUE":
-
-            # fill the holes
             print(
                 "REMARK      Filling holes in the bilayer with additional lipid molecules..."
             )
@@ -262,11 +396,9 @@ def run_program(argv: list[str]) -> None:
                 molecules_by_triangle, params
             )
 
-            # remove filling lipids that clash
             print("REMARK            Removing added lipids that clash...")
             clash_removal.remove_steric_clashes(positioned_lipids_by_triangle, params)
 
-            # save work from this step if user requested
             if params["output_directory"] != "":
                 print(
                     "REMARK            Saving the lipids that were added for reference..."
@@ -332,7 +464,6 @@ def run_program(argv: list[str]) -> None:
                     "REMARK ",
                 )
 
-            # now add the positioned ligands into the lipid list associated with the original triangle
             print(
                 "REMARK            Adding the hole-filling lipids to the original models..."
             )
@@ -370,13 +501,11 @@ def run_program(argv: list[str]) -> None:
                     "REMARK ",
                 )
 
-            else:  # your going to have to merge all the lists into the main one regardless, so I see no utility in using multiple processors
+            else:
                 for var_not_needed, lipids, index in positioned_lipids_by_triangle:
                     molecules_by_triangle[index][1].extend(lipids)
 
-            # save work from this step if user requested
             if params["output_directory"] != "":
-                # print out all lipids
                 print(
                     "REMARK            Saving the bilayers with holes plugged for reference..."
                 )
@@ -437,7 +566,6 @@ def run_program(argv: list[str]) -> None:
                     "REMARK ",
                 )
 
-    # now print out all the final molecules
     print("REMARK      Printing out or saving all lipids to a single file...")
     if params["output_directory"] != "":
         current_step = current_step + 1
@@ -514,7 +642,6 @@ def run_program(argv: list[str]) -> None:
             "REMARK ",
         )
 
-    # print out single files
     atomindex = 0
     resindex = 0
 
@@ -539,7 +666,6 @@ def run_program(argv: list[str]) -> None:
     if params["output_directory"] != "":
         f.close()
 
-    # optional output files
     if params["show_grid_points"] == "TRUE":
         print("REMARK      Printing out or saving the grid points for reference...")
         output.print_out_mesh_points(all_triangles, params)
@@ -547,13 +673,7 @@ def run_program(argv: list[str]) -> None:
         print("REMARK      Creating a VMD TCL file showing the triangulations...")
         output.print_out_triangle_tcl_file(all_triangles, params)
 
-    # if the disk was used instead of memory, delete the temporary directory
     if params["use_disk_instead_of_memory"] == "TRUE":
         shutil.rmtree(params["memory_store_dir"])
 
-    # tell the user how long it took for the program to execute
     print("REMARK      Execution time: " + str(time.time() - starttime) + " seconds")
-
-
-if __name__ == "__main__":
-    run_program(sys.argv)

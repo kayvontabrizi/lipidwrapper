@@ -1,14 +1,18 @@
 [project]
 name = "lipidwrapper"
 version = "2.0.0"
-description = "A tool for wrapping lipid bilayers around 3D surfaces"
+description = "A Python library for wrapping lipid bilayers around 3D surfaces"
 readme = "README.md"
 license = "BSD-2-Clause"
 requires-python = ">=3.10"
 dependencies = [
     "numpy",
     "scipy",
+    "typer",
 ]
+
+[project.scripts]
+lipidwrapper = "lipidwrapper:app"
 
 [project.optional-dependencies]
 image = ["Pillow"]
