@@ -142,7 +142,7 @@ def load_mesh_points_and_triangulations(params: dict) -> list[molecule.Triangle]
         pts.all_atoms_numpy = numpy.array(pts_list)
 
     # for everything but the DAE input, a tesselation/triangulation must also be performed
-    if all_triangles == None:  # so you need to get the triangulation
+    if all_triangles is None:  # so you need to get the triangulation
 
         # project the mesh onto the x-y plane (so it's important the it be oriented so that positive z is up)
         flatten = pts.all_atoms_numpy.copy()

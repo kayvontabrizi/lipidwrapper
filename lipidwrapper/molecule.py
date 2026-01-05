@@ -308,10 +308,10 @@ class Triangle:
             or numpy.array_equal(self.points[0], self.points[2])
             or numpy.array_equal(self.points[1], self.points[2])
         ):
-            return numpy.array([])
+            return numpy.array([], dtype=numpy.intp)
 
         if numpy.isnan(self.points).any():
-            return numpy.array([])
+            return numpy.array([], dtype=numpy.intp)
 
         tri_min = numpy.min(self.points, 0) - numpy.array([1e-6, 1e-6, 1e-6])
         tri_max = numpy.max(self.points, 0) + numpy.array([1e-6, 1e-6, 1e-6])
@@ -346,7 +346,7 @@ class Triangle:
             if math.fabs(angle1 + angle2 + angle3 - 2 * math.pi) < 0.01:
                 indices_to_keep.append(t)
 
-        return numpy.array(indices_to_keep)
+        return numpy.array(indices_to_keep, dtype=numpy.intp)
 
     def new_triangle_expanded_by_margin(self, margin: float) -> "Triangle":
         if margin < 0.0:

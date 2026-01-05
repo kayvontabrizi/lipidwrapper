@@ -2,12 +2,13 @@
 
 As ever larger and more complex biological systems are modeled in silico, approximating physiological lipid bilayers with simple planar models becomes increasingly unrealistic. When building large-scale models of whole subcellular environments, models of lipid membranes with carefully considered, biologically relevant curvature are essential. We here present a computer program called LipidWrapper, written by Jacob Durrant in the lab of Rommie E. Amaro, capable of creating curved membrane models with geometries derived from various possible sources, both experimental and theoretical. We are hopeful that this utility will be a useful tool for the computational-biology community.
 
+**Note:** This is an unofficial Python 3 update of [the Durrant Lab's LipidWrapper](https://github.com/durrantlab/lipidwrapper). This modernization was largely completed with LLM coding agents, and only superficially validated through light testing, so proceed with caution.
+
 ## Installation
 
 ```bash
-git clone <repository-url>
-cd LipidWrapper/package
-pip install .
+git clone <repository-url> ./LipidWrapper
+pip install ./LipidWrapper
 ```
 
 ## Examples
