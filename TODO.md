@@ -1,0 +1,2 @@
+ - Refactor all vector math and rotation code into proper modern numpy/scipy usage
+ - The `file_io.py` module is ridiculous and probably unnecessary

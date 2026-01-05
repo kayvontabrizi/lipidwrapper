@@ -1,7 +1,6 @@
 ## imports
 
 # standard
-import os
 import tempfile
 
 # custom
@@ -10,6 +9,15 @@ import pytest
 
 # local
 from lipidwrapper import molecule
+
+
+## markers
+
+
+def pytest_configure(config):
+    config.addinivalue_line(
+        "markers", "slow: marks tests as slow (deselect with '-m \"not slow\"')"
+    )
 
 
 ## fixtures

@@ -58,7 +58,9 @@ from . import clash_removal
 from . import file_io
 from . import hole_filling
 from . import lipid_positioning
+from . import molecule
 from . import multiprocessing_utils
+from . import numpy_extensions
 from . import output
 
 
